@@ -1,8 +1,8 @@
 {
-  "name": "polling-app",
+  "name": "starter-app",
   "version": "1.0.0",
   "type": "module",
-  "description": "A full-stack polling application with React, Express, and PostgreSQL",
+  "description": "A full-stack starter app with React, Express, and PostgreSQL",
   "scripts": {
     "server-dev": "node --watch server/server.js",
     "client-dev": "vite client",

@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { create } from "express-handlebars";
@@ -31,11 +32,24 @@ app.use("/api/auth", authController);
 
 // Serve the React app
 if (process.env.NODE_ENV === "production") {
-  // In production, serve the built files from client/dist
+  // In production, load the Vite manifest and serve built files from client/dist
+  const manifestPath = path.join(
+    __dirname,
+    "../client/dist/.vite/manifest.json"
+  );
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+  const entries = Object.values(manifest).filter((e) => e.isEntry);
+  const jsFiles = entries.map((e) => e.file);
+  const cssFiles = [...new Set(entries.flatMap((e) => e.css || []))];
+
   app.use(express.static(path.join(__dirname, "../client/dist")));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+    res.render("index", {
+      isDev: false,
+      jsFiles,
+      cssFiles,
+    });
   });
 } else {
   // In development, redirect asset/file requests to the Vite dev server
@@ -48,7 +62,7 @@ if (process.env.NODE_ENV === "production") {
 
   // In development, Express serves the HTML which loads JS from Vite dev server
   app.get("*", (req, res) => {
-    res.render("index", { viteOrigin: VITE_ORIGIN });
+    res.render("index", { isDev: true, viteOrigin: VITE_ORIGIN });
   });
 }
 
